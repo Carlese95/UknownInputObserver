@@ -1,0 +1,56 @@
+The **Unknown Input Observer** (UIO) is a concept and technique primarily used in the field of control theory and dynamic system estimation. Its purpose is to estimate the **state of a system** when it is affected by **unknown inputs** that are not directly observable or measurable. In other words, the UIO is designed to estimate the internal states of a system despite external influences (inputs) that are unknown or cannot be measured directly.
+
+### Context of UIO Usage
+In many dynamic systems, it is crucial to know the complete state of the system (e.g., position, velocity, temperature, etc.) to control or monitor its behavior. However, there are cases where:
+1. **The system is affected by external inputs that cannot be measured** (e.g., disturbances, noise, or unknown control signals), which cannot be directly observed.
+2. **The system model has uncertainties or noise**, and it is unclear how these unknown inputs impact the system's behavior.
+3. **The system has multiple state variables** that evolve over time, and observing all inputs and states directly may be challenging or expensive.
+
+### How Does the UIO Work?
+The Unknown Input Observer operates similarly to an "observer" in control and estimation theory. An observer is a mathematical system that uses the **outputs** of the system (measurable signals) and the **dynamic model** of the system to estimate its **states**.
+#### 1. **Dynamic System Model**
+   A dynamic system is typically described by a set of differential or difference equations, often in the form:
+- **State equation**:
+  \[
+  \dot{x}(t) = Ax(t) + Bu(t) + w(t)
+  \]
+Where:
+  - \( x(t) \) is the system state vector (e.g., position, velocity, etc.).
+  - \( A \) is the matrix describing the system dynamics.
+  - \( u(t) \) is the system input (which can be controlled or act as a disturbance).
+  - \( w(t) \) is an unknown input (not directly measurable and influencing the system's behavior).
+- **Output equation**:
+  \[
+  y(t) = Cx(t) + v(t)
+  \]
+Where:
+  - \( y(t) \) is the system output (what can be measured).
+  - \( C \) is the matrix describing how the states influence the outputs.
+  - \( v(t) \) is the measurement noise.
+
+#### 2. **State Estimation**
+The goal of the UIO is to estimate the system states, \( \hat{x}(t) \), without direct knowledge of the unknown input \( w(t) \). To achieve this, the UIO relies on dynamic observation of the system and uses **measurable outputs** \( y(t) \) and the system model to produce an estimation of the states that closely approximates the real values.
+The typical UIO process involves:
+- **Observer generation**: The UIO uses information from the system outputs and the dynamic model to estimate the state. Through a filtering or estimation design, the UIO approximates the true state despite the unknown inputs \( w(t) \).
+- **Estimation correction**: The observer adjusts the state estimation based on the differences between the observed outputs and the estimated outputs. This continuous correction process compensates for errors caused by unknown inputs.
+
+#### 3. **Design Strategies**
+Different methods can be used to design a UIO, depending on the system's characteristics and the nature of the unknown inputs. Some approaches include:
+- **Modeling unknown inputs**: Unknown inputs are modeled as disturbances or noise, and the observer is designed to distinguish between contributions from controlled and unknown inputs.
+- **Robust observer design**: If the system is sensitive to certain disturbances or uncertainties, the UIO can incorporate robust methods to ensure reliable estimation even under unpredicted variations in inputs or the model.
+- **Extended or nonlinear Kalman filters**: For nonlinear systems or systems with large noise, extended Kalman filter (EKF) or nonlinear methods can be used to adjust the estimation iteratively.
+
+### Purpose and Advantages
+The primary purpose of the **Unknown Input Observer** is to **enhance the accuracy of state estimation**, even when inputs are unknown and cannot be directly measured. This type of observer offers several advantages:
+1. **Robustness against uncertainty**: The UIO allows the system to remain efficient and reliable even in the presence of unknown disturbances.
+2. **Improved control efficiency**: By obtaining accurate state estimations, the controller can make more informed decisions, improving the overall system performance.
+3. **Reduced reliance on direct measurements**: There is no need to measure all inputs directly, reducing costs or increasing flexibility.
+
+### Application Examples
+The UIO is valuable in various engineering fields, including:
+- **Automotive**: Estimating the speed, position, or state of a vehicle in the presence of unobservable noise or disturbances (e.g., wind or uneven road surfaces).
+- **Robotics**: Estimating the positions and velocities of robots in the presence of unknown inputs, such as frictional forces or environmental disturbances.
+- **Electrical systems**: Monitoring the behavior of electrical circuits when voltage fluctuations or external noise affect the system.
+- **Aerospace**: Estimating the states of an aircraft under turbulence or unexpected flight conditions that cannot be directly measured.
+
+In summary, the **Unknown Input Observer (UIO)** is a powerful tool that helps estimate the internal states of a dynamic system when the inputs affecting the system are unknown and cannot be measured directly. By leveraging estimation and correction techniques, the UIO provides accurate approximations of the system's behavior, improving control and monitoring in uncertain conditions.
