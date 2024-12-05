@@ -1,0 +1,123 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define a class for the Simple Unknown Input Observer (UIO)
+class SimpleUnknownInputObserver:
+    def __init__(self, A, B, C, H):
+        """Initializes the system with matrices A, B, C, and H."""
+        self.A = np.array(A, dtype=float)  # System dynamics matrix
+        self.B = np.array(B, dtype=float)  # Input matrix
+        self.C = np.array(C, dtype=float)  # Output matrix
+        self.H = np.array(H, dtype=float)  # Unknown input distribution matrix
+        self.n = self.A.shape[0]  # Number of state variables (rows of A)
+        self.m = self.C.shape[0]  # Number of output variables (rows of C)
+
+    def estimate_state(self, y, u, x_prev):
+        """Estimates the state using a simple approach."""
+        # Compute the estimated state based on the previous state and current input
+        x_est = np.dot(self.A, x_prev) + np.dot(self.B, u)  # Estimate state using A and B
+        residual = y - np.dot(self.C, x_est)  # Compute the residual (measurement error)
+
+        # Adjust the estimated state based on the residual (only the first 'm' state variables)
+        x_est[:self.m] += residual  # Update the first 'm' state variables with the residual
+
+        return x_est  # Return the adjusted state estimate
+
+# Auxiliary function to input a matrix from the user
+def input_matrix(rows, cols, name):
+    """Auxiliary function to input a matrix with specified dimensions."""
+    print(f"Enter the matrix {name} ({rows}x{cols}):")  # Prompt to input matrix
+    matrix = []
+    for i in range(rows):  # Loop over each row
+        while True:
+            try:
+                # Read a row, remove commas, split by spaces, and convert to float
+                row = list(map(float, input(f"Values for row {i + 1} (separated by space): ").replace(",", "").split()))
+                if len(row) != cols:  # Check if the number of values matches the expected number of columns
+                    raise ValueError(f"Expected {cols} values, but {len(row)} were entered.")
+                matrix.append(row)  # Add the row to the matrix
+                break  # Exit the loop once the row is successfully inputted
+            except ValueError as e:
+                print(f"Error: {e}. Please re-enter row {i + 1}.")  # Show an error message and prompt for re-entry
+    return np.array(matrix, dtype=float)  # Return the matrix as a numpy array
+
+# Main interactive function to simulate the Unknown Input Observer
+def interactive_uio():
+    """Interactive simulation of an Unknown Input Observer."""
+    print("Interactive simulation of the Unknown Input Observer")
+
+    # Get the dimensions of the system matrices
+    n_states = int(input("Enter the number of state variables: "))  # Number of states (n)
+    n_inputs = int(input("Enter the number of inputs: "))  # Number of inputs (m), should be 2 in this case
+    n_outputs = int(input("Enter the number of outputs: "))  # Number of outputs (p)
+
+    # Input the system matrices from the user
+    A = input_matrix(n_states, n_states, "System (A)")  # State transition matrix A (n x n)
+    B = input_matrix(n_states, n_inputs, "Input (B)")  # Input matrix B (n x m)
+    C = input_matrix(n_outputs, n_states, "Output (C)")  # Output matrix C (p x n)
+    H = input_matrix(n_states, 1, "Unknown Input Distribution (H)")  # Distribution matrix for unknown input H (n x 1)
+
+    # Simulation parameters
+    num_steps = int(input("\nEnter the number of simulation steps: "))  # Number of simulation steps
+    noise_level = float(input("Enter the measurement noise level (e.g., 0.01): "))  # Measurement noise level
+
+    # Create an instance of the Unknown Input Observer (UIO)
+    uio = SimpleUnknownInputObserver(A, B, C, H)
+
+    # Arrays to store the results of the simulation
+    x_true = np.zeros((num_steps, n_states))  # Array to store the true states (n x num_steps)
+    x_est = np.zeros((num_steps, n_states))  # Array to store the estimated states (n x num_steps)
+    residuals = np.zeros((num_steps, n_outputs))  # Array to store the residuals (p x num_steps)
+
+    # Initial conditions for the true state (x_true)
+    x_true[0] = np.random.rand(n_states)  # Random initial state
+
+    # Generate random input and unknown disturbances for all simulation steps
+    u = np.random.rand(num_steps, n_inputs)  # Random inputs (num_steps x m)
+    d = np.random.rand(num_steps, n_states)  # Random unknown disturbances (num_steps x n)
+
+    # Start the simulation (with random inputs and disturbances)
+    for t in range(1, num_steps):
+        # Simulate the true state evolution with unknown inputs and noise
+        x_true[t] = np.dot(A, x_true[t - 1]) + np.dot(B, u[t]) + np.dot(H.T, d[t])  # State update equation
+
+        # Simulate the noisy measurement
+        y = np.dot(C, x_true[t]) + np.random.normal(0, noise_level, n_outputs)  # Output with added noise
+
+        # Estimate the state using the UIO
+        x_est[t] = uio.estimate_state(y, u[t], x_est[t - 1])  # Estimate state based on the noisy measurement
+
+        # Calculate the residual (difference between actual and estimated output)
+        y_est = np.dot(C, x_est[t])  # Estimated output based on the estimated state
+        residuals[t] = y - y_est  # Residual = actual output - estimated output
+
+    # Plot the results
+
+    plt.figure(figsize=(15, 10))  # Set up the figure for plotting
+
+    # Plot the true states vs. the estimated states
+    plt.subplot(2, 1, 1)
+    for i in range(n_states):
+        plt.plot(x_true[:, i], label=f'True State {i + 1}')  # Plot the true state for each state variable
+        plt.plot(x_est[:, i], '--', label=f'Estimated State {i + 1}')  # Plot the estimated state for each state variable
+    plt.title('True States vs. Estimated States')  # Set the plot title
+    plt.xlabel('Time Steps')  # Set the x-axis label
+    plt.ylabel('State Value')  # Set the y-axis label
+    plt.legend()  # Add a legend
+
+    # Plot the residuals
+    plt.subplot(2, 1, 2)
+    for i in range(n_outputs):
+        plt.plot(residuals[:, i], label=f'Residual {i + 1}')  # Plot the residual for each output variable
+    plt.title('Residuals')  # Set the plot title
+    plt.xlabel('Time Steps')  # Set the x-axis label
+    plt.ylabel('Residual Value')  # Set the y-axis label
+    plt.legend()  # Add a legend
+
+    # Adjust the layout and display the plots
+    plt.tight_layout()  # Adjust the spacing between subplots
+    plt.show()  # Show the plots
+
+# This block ensures that the interactive_uio function runs only if the script is executed directly
+if __name__ == "__main__":
+    interactive_uio()  # Start the interactive simulation
